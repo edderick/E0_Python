@@ -1,4 +1,52 @@
 import socket
+import struct 
+import array
+  
+
+class Connection:
+  """ 
+  Handles communication between the two bluetooth fakes.
+  """
+  def __init__(self,socket):
+    self.socket = socket
+  def __send__(self, binary_data):
+    """
+    Sends Network byte ordered binary data.
+    """
+    socket.sendall(binary_data)
+  def __recv__(self):
+    """
+    Recieves network byte ordered binary data.
+    """
+    return recv(1024)
+  def send_neg(ID):
+    """
+    Sends a negotiation packet.
+    """
+  def recv_neg():
+    """
+    Recieves negotiation packet.
+    """
+  def send_init():
+    """
+    sends init packet
+    """
+  def recv_init():
+    """
+    recieves init packet
+    """
+  def send_data():
+   """
+   sends data packet over network.
+   """
+  def recv_data():
+   """
+   recieves data packet (encrypted data).
+   """
+
+
+
+
 
 def listen(port):
   """

@@ -10,19 +10,8 @@ args = parser.parse_args()
 
 if(args.listen):
   conn = comms.listen(args.port)
-  print('accepted connection from %s', args.addr)
-  while 1:
-    data = conn.recv(1024)
-    print data
-    if not data: break
-    conn.sendall("hello, thanks for the data")
-  conn.close()
+  print conn.recv(1024)
 else:
   conn = comms.connect(args.addr, args.port)
-  while 1:
-    data = conn.sendall("hi there")
-    got = conn.recv(1024)
-    if not got: break
-    print got
-  conn.close()
+  conn.send("bob")
 
