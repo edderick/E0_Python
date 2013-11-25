@@ -1,22 +1,16 @@
 import sys
-import socket
-
 import argparse
+import comms
 
 parser = argparse.ArgumentParser(description="Create a socket connection")
-parser.add_argument('addr', type=str,  help="what domain name/ipaddress to connect to?")
-parser.add_argument('-p', type=int, default=2000, help="What port to use", dest="port")
-parser.add_argument('-l', dest="listen", action='store_true', help="What port to use")
+parser.add_argument('addr', type=str, default="0.0.0.0",  help="what domain name/ipaddress to connect to?")
+parser.add_argument('-p', type=int, default=2000, help="port to connect to, or with -l option, port to listen on.", dest="port")
+parser.add_argument('-l', dest="listen", action='store_true', help="Run as server, listen for connections.")
 args = parser.parse_args()
 
 if(args.listen):
-  s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-  s.bind(('', args.port))
-  s.listen(0)
-  sess = s.accept()
-  addr = sess[1]
-  conn = sess[0]
-  print('accepted connection from %s', addr)
+  conn = comms.listen(args.port)
+  print('accepted connection from %s', args.addr)
   while 1:
     data = conn.recv(1024)
     print data
@@ -24,7 +18,7 @@ if(args.listen):
     conn.sendall("hello, thanks for the data")
   conn.close()
 else:
-  conn = socket.create_connection((args.addr, args.port))
+  conn = comms.connect(args.addr, args.port)
   while 1:
     data = conn.sendall("hi there")
     got = conn.recv(1024)
