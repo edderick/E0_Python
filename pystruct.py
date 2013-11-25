@@ -49,5 +49,10 @@ def pack_data(clock, data):
   d = header + payload
   return d
 
-def unpack_data
-pack_data(7, 'Hello')
+def unpack_data(data):
+  print len(data)
+  type, clock, length = struct.unpack('>III', data[:12])  
+  d = struct.unpack('>' + ('B' * length), data[12:])
+  d = bytearray(d)
+  return (type,clock,length,d)
+print unpack_data(pack_data(7, 'Hello'))
