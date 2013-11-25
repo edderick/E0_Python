@@ -10,8 +10,12 @@ args = parser.parse_args()
 
 if(args.listen):
   conn = comms.listen(args.port)
-  print conn.recv(1024)
+  c = comms.Connection(conn)
+  c.send_data(1, 'jargon')
+  conn.close()
 else:
   conn = comms.connect(args.addr, args.port)
-  conn.send("bob")
+  c = comms.Connection(conn)
+  print c.recv_data()
+  conn.close()
 

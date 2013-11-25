@@ -1,6 +1,5 @@
 import socket
-import struct 
-import array
+from pack import *
   
 
 class Connection:
@@ -8,41 +7,23 @@ class Connection:
   Handles communication between the two bluetooth fakes.
   """
   def __init__(self,socket):
-    self.socket = socket
-  def __send__(self, binary_data):
-    """
-    Sends Network byte ordered binary data.
-    """
-    socket.sendall(binary_data)
-  def __recv__(self):
-    """
-    Recieves network byte ordered binary data.
-    """
-    return recv(1024)
-  def send_neg(ID):
-    """
-    Sends a negotiation packet.
-    """
-  def recv_neg():
-    """
-    Recieves negotiation packet.
-    """
-  def send_init():
-    """
-    sends init packet
-    """
-  def recv_init():
-    """
-    recieves init packet
-    """
-  def send_data():
-   """
-   sends data packet over network.
-   """
-  def recv_data():
-   """
-   recieves data packet (encrypted data).
-   """
+    self.sock = socket
+  def __send(self, binary_data):
+    self.sock.sendall(binary_data)
+  def __recv(self):
+    return self.sock.recv(1024)
+  def send_neg(self, ID):
+    self.__send(pack_neg(ID))
+  def recv_neg(self):
+   return unpack_neg(self.__recv())
+  def send_init(self, clock, rand, link_key):
+    self.__send(pack_init(clock,rand_link_key))
+  def recv_init(self):
+    return unpack_init(self.__recv())
+  def send_data(self, clock, data):
+    self.__send(pack_data(clock,data))
+  def recv_data(self):
+    return unpack_data(self.__recv())
 
 
 
