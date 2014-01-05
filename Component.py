@@ -34,6 +34,7 @@
 # 
 #     
 
+from bitstring import *
 
 class Component(object):
     """
@@ -93,7 +94,6 @@ class Adder(Component):
     
     def __init__(self, *args):
         super(Adder,self).__init__(args)
-
       
     def stepfunc(self, t):
         return sum([x.outputs[t] for x in self.inputs])
@@ -103,9 +103,13 @@ class Delay(Component):
     Delay Class:
         Output[t] = input.output[t-1]
     """
-    def __init__(self):
+    #def __init__(self):
+     #   super(Delay, self).__init__([])
+      #  self.outputs.append(0)
+
+    def __init__(self, arg):
         super(Delay, self).__init__([])
-        self.outputs.append(0)
+        self.outputs.append(arg)
     
     def step(self,t):
         if(len(self.outputs) == t):
@@ -115,6 +119,37 @@ class Delay(Component):
     
     def addInput(self,i):
         self.inputs.append(i)
+
+class Exclusive_OR(Component):
+    """
+    Exclusive_OR Class:
+        Performs Exclusive-OR operation on inputs
+    """
+    
+    def __init__(self, *args):
+        super(Exclusive_OR,self).__init__(args)
+
+    def xor(self, sequence):
+        def xor_operation(a, b): return a^b
+        return reduce(xor_operation, sequence)
+      
+    def stepfunc(self, t):
+        return self.xor([x.outputs[t] for x in self.inputs])
+
+class Divider(Component):
+    """
+    Divider Class:
+        Performs division by 2 operation on input
+    """
+    
+    def __init__(self, *arg):
+        super(Divider, self).__init__(arg)
+      
+    def stepfunc(self, t):        
+        return self.inputs[0].outputs[t] >> 1
+
+
+#Examples        
 '''
     Lets set up a simple circuit:
     
@@ -122,13 +157,40 @@ class Delay(Component):
                   Adder--->Output
     Source(7)-----^
 '''
-mySource = Source(1)
-mySevenSource = Source(7)
+m = Bits('0b0')
+n = Bits('0b1')
+mySource = Source(m)
+mySevenSource = Source(n)
 myAdder = Adder(mySource, mySevenSource)
 myOutput = Output(myAdder) 
 for i in range(4):
     myOutput.step(i)
     print i, myOutput
+
+'''
+    A simple circuit for XOR:
+    
+    Source(0)--------v
+                     |
+    Source(1)-----v  |
+                  Exclusive_OR--->Output
+    Source(0)-----^  ^
+                     |
+    Source(1)--------^
+'''
+m = Bits('0b01')
+n = Bits('0b11')
+r = Bits('0b00')
+testSource = Source(m)
+secondTestSource = Source(n)
+thirdTestSource = Source(m)
+fourthTestSource = Source(n)
+testXOR = Exclusive_OR(testSource, secondTestSource)# thirdTestSource, fourthTestSource)
+testOutput = Output(testXOR)
+for i in range(4):
+    testOutput.step(i)
+    print i, [x.bin for x in testOutput.outputs]  #display result in binary format using bin method of Bits
+
     
 '''
     Now for a more complex example.
@@ -144,7 +206,7 @@ for i in range(4):
 
 twoSource = Source(2)
 fourSource = Source(4)
-delay = Delay()
+delay = Delay(0)
 adder = Adder(twoSource, fourSource, delay)
 delay.addInput(adder)
 output = Output(adder)
@@ -153,7 +215,35 @@ for i in range(4):
     output.step(i)
     print i,output
     
+'''
+    A more complex XOR + delay example.
+    Feedback the value of an XOR into a delay:
 
+    Source(2)--------v
+    Source(4)--> Exclusive_OR-----------> Output 
+                     ^       |
+                     |       |
+                     |       |
+                    delay<---'
+'''
 
+delay = Delay(r)
+#delay.addInput(r)
+XOR_delayed = Exclusive_OR(testSource, secondTestSource, delay)
+delay.addInput(XOR_delayed)
+output = Output(XOR_delayed)
 
+for i in range(4):
+    output.step(i)
+    print i,output
+
+#Division
+''' 
+    Source(1)----->Divider--->Output  
+'''
+divider = Divider(secondTestSource)
+divisionOutput = Output(divider)
+for i in range(4):
+    divisionOutput.step(i)
+    print i,divisionOutput
 
