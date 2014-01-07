@@ -1,0 +1,34 @@
+# LFSR function
+
+from bitstring import *
+
+def LFSR(shift_register, tap_mask):
+    while True:
+        taps = tap_mask.findall([1])
+        list_of_taps = list(taps)
+        xor_inputs = [shift_register[tap] for tap in list_of_taps]
+        def xor_operation(a,b): return a^b
+        xor_result_bit = reduce(xor_operation, xor_inputs)
+                
+        xor_result_shifted = Bits(uint = xor_result_bit, length = shift_register.len)
+        
+        shift_register_update = (shift_register >> 1) | (xor_result_shifted << (shift_register.len - 1))
+        shift_register = shift_register_update
+        yield int(xor_result_bit), shift_register
+
+count = 0
+#seed = Bits(uint = 25, length = 25)
+#mask = Bits(uint = 139297, length = 25)  #Bits('0b0000000100010000000100001') L1
+#seed = Bits('0b01101000010')
+
+# test data used to verify LFSR functionality <http://www.cs.princeton.edu/courses/archive/fall11/cos126/assignments/lfsr.html>
+seed = Bits('0b01000010110')
+mask = Bits('0b00000000101')
+
+for xor, sr in LFSR(seed, mask):
+    if (count <= 20):
+        print xor, sr.bin
+        count += 1
+    else:
+        count = 0
+        break

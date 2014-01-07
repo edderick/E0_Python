@@ -9,7 +9,7 @@ def LFSR(seed, taps):
 count = 0
 for x in LFSR([1,1,0,0,1,0,0,1,0], [1,6,7,8]):
     if (count <= 20):
-        print x
+        #print x
         count += 1
     else:
         count = 0
@@ -28,8 +28,8 @@ def LFSR2(seed, taps):
         yield xor, sr
         if sr == seed:
             break
-nbits = 9
-for xor, sr in LFSR2(0b110010010, (8,7,6,1)):
+nbits = 25
+for xor, sr in LFSR2(0b0000000100010000000100001, (25,20,12,8)):
     if (count <= 20):
         print xor, bin(2**nbits + sr)[3:]
         count += 1
