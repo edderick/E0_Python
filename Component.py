@@ -114,6 +114,7 @@ class Delay(Component):
     def step(self,t):
         if(len(self.outputs) == t):
             self.outputs.append(self.inputs[0].outputs[t-1])
+
     def stepfunc(self, t):
         return self.inputs[0].output[t-1]
     
@@ -149,7 +150,122 @@ class Divider(Component):
         return self.inputs[0].outputs[t] >> 1
 
 
-#Examples        
+class LFSR(Component):
+    """
+    LFSR Class:
+        Models an LFSR
+    """
+
+    #Static class variables
+    LFSR1_mask = Bits(uint = 139297, length = 25)        #Bits('0b0000000100010000000100001')                L1
+    LFSR2_mask = Bits(uint = 557185, length = 31)        #Bits('0b0000000000010001000000010000001')          L2
+    LFSR3_mask = Bits(uint = 536871457, length = 33)     #Bits('0b000100000000000000000001000100001')        L3
+    LFSR4_mask = Bits(uint = 34359740425, length = 39)   #Bits('0b000100000000000000000000000100000001001')  L4
+    INITIALISATION = 0
+    NORMAL = 1
+    OPERATION_MODE = NORMAL
+    
+    def __init__(self, seed, LFSR_type):
+        super(LFSR,self).__init__([])
+        self.result = self.LFSR_func(seed, LFSR_type)
+
+    @classmethod
+    def lfsr1(cls, seed):
+        return cls(seed, LFSR.LFSR1_mask)
+
+    @classmethod
+    def lfsr2(cls, seed):
+        return cls(seed, LFSR.LFSR2_mask)   
+
+    @classmethod
+    def lfsr3(cls, seed):
+        return cls(seed, LFSR.LFSR3_mask)
+
+    @classmethod
+    def lfsr4(cls, seed):
+        return cls(seed, LFSR.LFSR4_mask)
+
+    def initialise(self, arg):        
+        self.input_bit = arg.value        
+
+    def LFSR_func(self, shift_register, tap_mask):
+        MSB_bit = 0
+        while True:
+            taps = tap_mask.findall([1])
+            list_of_taps = list(taps)                                   #get indices of taps
+            #xor_inputs = [shift_register[tap] for tap in list_of_taps]  #use tap indices for XOR operation
+
+            if not (self.OPERATION_MODE):
+                # In initialisation operation, input bit is used to update LFSR MSB
+                MSB_bit = self.input_bit.int
+                
+            elif (self.OPERATION_MODE):
+                # In normal operation, XOR operation is used to update MSB bit of LFSR
+                xor_inputs = [shift_register[tap] for tap in list_of_taps]  #use tap indices for XOR operation
+                def xor_operation(a,b): return a^b
+                xor_result_bit = reduce(xor_operation, xor_inputs)
+                MSB_bit = xor_result_bit
+
+            #MSB bit has to be made same length as shift register to enable OR operation
+            xor_result_bit_shifted = Bits(uint = MSB_bit, length = shift_register.len)
+
+            #Concatenate MSB and shift register (right shift LFSR)
+            shift_register_update = (shift_register >> 1) | (xor_result_bit_shifted << (shift_register.len - 1))
+            
+            shift_register = shift_register_update
+            yield int(MSB_bit)#, shift_register.bin            
+
+    def step(self,t):
+        if(len(self.outputs) == t):
+            self.outputs.append(self.result.next())
+      
+    def stepfunc(self, t):
+        return self.outputs.append(self.result.next())
+
+#Examples
+
+#LFSR
+sr = Bits(uint = 25, length = 25)
+sr_init = Bits(uint = 0, length = 25)
+w = Bits('0b00')
+q = Bits('0b01')
+
+wSource = Source(w)
+qSource = Source(q)
+
+myLFSR = LFSR.lfsr1(sr_init)
+#myLFSR.OPERATION_MODE = 0
+#myLFSR.initialise(wSource)
+LFSROutput = Output(myLFSR)
+
+for i in range(45):
+    #if (i % 2):
+        #myLFSR.initialise(wSource)
+    #else:
+        #myLFSR.initialise(qSource)
+    
+    if (i < 25):
+        myLFSR.OPERATION_MODE = 0
+        if (sr[i]):
+            m = Bits('0b01')
+        else:
+            m = Bits('0b00')
+    else:
+        myLFSR.OPERATION_MODE = 1         
+    
+    myLFSR.initialise(Source(m))
+    LFSROutput.step(i)
+    print i, LFSROutput
+
+'''
+#myLFSR = LFSR.lfsr1(sr)
+for i in range(20):
+    myLFSR.OPERATION_MODE = 1
+    myLFSR.initialise(Source(q))
+    LFSROutput.step(i)
+    print i, LFSROutput
+'''
+
 '''
     Lets set up a simple circuit:
     
@@ -165,7 +281,7 @@ myAdder = Adder(mySource, mySevenSource)
 myOutput = Output(myAdder) 
 for i in range(4):
     myOutput.step(i)
-    print i, myOutput
+    #print i, myOutput
 
 '''
     A simple circuit for XOR:
@@ -189,7 +305,7 @@ testXOR = Exclusive_OR(testSource, secondTestSource)# thirdTestSource, fourthTes
 testOutput = Output(testXOR)
 for i in range(4):
     testOutput.step(i)
-    print i, [x.bin for x in testOutput.outputs]  #display result in binary format using bin method of Bits
+    #print i, [x.bin for x in testOutput.outputs]  #display result in binary format using bin method of Bits
 
     
 '''
@@ -213,7 +329,7 @@ output = Output(adder)
 
 for i in range(4):
     output.step(i)
-    print i,output
+    #print i,output
     
 '''
     A more complex XOR + delay example.
@@ -235,7 +351,7 @@ output = Output(XOR_delayed)
 
 for i in range(4):
     output.step(i)
-    print i,output
+    #print i,output
 
 #Division
 ''' 
@@ -245,5 +361,5 @@ divider = Divider(secondTestSource)
 divisionOutput = Output(divider)
 for i in range(4):
     divisionOutput.step(i)
-    print i,divisionOutput
+    #print i,divisionOutput
 
