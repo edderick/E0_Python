@@ -196,6 +196,7 @@ class LFSR(Component):
     INITIALISATION = 0
     NORMAL = 1
     OPERATION_MODE = NORMAL                             # default operation mode is normal operation
+    MASK_TYPE = 0
     
     def __init__(self, seed, LFSR_type):
         super(LFSR,self).__init__([])
@@ -203,18 +204,22 @@ class LFSR(Component):
 
     @classmethod
     def lfsr1(cls, seed):
+        cls.MASK_TYPE = 1
         return cls(seed, LFSR.LFSR1_mask)
 
     @classmethod
     def lfsr2(cls, seed):
+        cls.MASK_TYPE = 2
         return cls(seed, LFSR.LFSR2_mask)   
 
     @classmethod
     def lfsr3(cls, seed):
+        cls.MASK_TYPE = 3
         return cls(seed, LFSR.LFSR3_mask)
 
     @classmethod
     def lfsr4(cls, seed):
+        cls.MASK_TYPE = 4
         return cls(seed, LFSR.LFSR4_mask)
 
     def initialise(self, arg):        
@@ -245,7 +250,18 @@ class LFSR(Component):
             shift_register_update = (shift_register >> 1) | (xor_result_bit_shifted << (shift_register.len - 1))
             
             shift_register = shift_register_update
-            yield int(MSB_bit)#, shift_register.bin            
+            
+            #Select output bit depending on LFSR type
+            if (self.MASK_TYPE == 1) | (self.MASK_TYPE == 2):
+                X = shift_register[23]
+            elif (self.MASK_TYPE == 3) | (self.MASK_TYPE == 4):
+                X = shift_register[31]
+
+            if (X):
+                X_bit = Bits('0b01')
+            elif not (X):
+                X_bit = Bits('0b00')
+            yield int(MSB_bit), X_bit.int #, shift_register.bin            
 
     def step(self,t):
         if(len(self.outputs) == t):
@@ -290,7 +306,8 @@ for i in range(4):
     of the LFSR; the initialise() method is deliberately called at each iteration of the test example but ONLY works when the OPERATION_MODE
     flag is set, otherwise the normal operation runs.
     Results were compared with those produced by LFSR_test and seen to be similar
-    NB: The printed result shows the current bit shifted into the position 1 (leftmost or input bit position) of the LFSR!!!
+    NB: The printed result shows the current bit (MSB_bit) shifted into the position 1 (leftmost or input bit position) of the LFSR and the output
+    bit (X_bit) which depends on the type of LFSR; bit 24 for LFSR 1 and 2 and bit 32 for LFSR 3 and 4!!!
         This is NOT showing the current state of the shift register!  However this can be deduced using the length of the LFSR
         and knowing how many bits have been shifted in.
         Also, running the for loop the length of the LFSR after initialisation, flushes out the initialisation bits so that the shift register
@@ -307,16 +324,16 @@ w = Bits('0b00')
 q = Bits('0b01')
 wSource = Source(w)
 qSource = Source(q)
-myLFSR = LFSR.lfsr3(sr_init)
+myLFSR = LFSR.lfsr3(sr)
 LFSROutput = Output(myLFSR)
+myLFSR.OPERATION_MODE = 1 
 
-
-for i in range(53):
+for i in range(33):
     #if (i % 2):
         #myLFSR.initialise(wSource)
     #else:
         #myLFSR.initialise(qSource)
-    
+    '''
     if (i < 33):
         myLFSR.OPERATION_MODE = 0
         if (sr_reversed[i]):
@@ -325,8 +342,8 @@ for i in range(53):
             m = Bits('0b00')
     else:
         myLFSR.OPERATION_MODE = 1         
-    
-    myLFSR.initialise(Source(m))
+    '''
+    #myLFSR.initialise(Source(m))
     LFSROutput.step(i)
     #print i, LFSROutput
 
