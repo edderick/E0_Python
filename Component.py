@@ -149,6 +149,38 @@ class Divider(Component):
     def stepfunc(self, t):        
         return self.inputs[0].outputs[t] >> 1
 
+class Bijection(Component):
+    """
+    Bijection Class:
+        Performs division by 2 operation on input
+    """
+
+    #Static class variables
+    T1_values = [Bits('0b00'), Bits('0b01'), Bits('0b10'), Bits('0b11')]
+    T2_values = [Bits('0b00'), Bits('0b11'), Bits('0b01'), Bits('0b10')]
+    
+    def __init__(self):
+        super(Bijection, self).__init__([])
+        #self.outputs.append(arg)
+        #self.result = arg
+
+    #@classmethod
+    def t1(self, c):
+        self.result = Bijection.T1_values[c.value.int]
+        return 
+
+    #@classmethod
+    def t2(self, c):
+        self.result = Bijection.T2_values[c.value.int]
+        return 
+
+    def step(self,t):
+        if(len(self.outputs) == t):
+            self.outputs.append(self.result)
+      
+    def stepfunc(self, t):        
+        return self.outputs.append(self.result)
+
 
 class LFSR(Component):
     """
@@ -163,7 +195,7 @@ class LFSR(Component):
     LFSR4_mask = Bits(uint = 34359740425, length = 39)   #Bits('0b000100000000000000000000000100000001001')  L4
     INITIALISATION = 0
     NORMAL = 1
-    OPERATION_MODE = NORMAL
+    OPERATION_MODE = NORMAL                             # default operation mode is normal operation
     
     def __init__(self, seed, LFSR_type):
         super(LFSR,self).__init__([])
@@ -224,29 +256,70 @@ class LFSR(Component):
 
 #Examples
 
+#Bijections T1 and T2
+''' 
+    Source(Bits('0b01'))----->Bijection--->Output
+
+    See bijection example below.
+'''
+
+#w = Source(Bits('0b00'))
+#q = Source(Bits('0b01'))
+#r = Source(Bits('0b10'))
+#s = Source(Bits('0b11'))
+myT1 = Bijection()
+myT2 = Bijection()
+T1_Output = Output(myT1)
+T2_Output = Output(myT2)
+print 'This is a bijection (T1 and T2) example:'
+for i in range(4):
+    g = Source(Bits(uint = i, length = 2))
+    myT1.t1(g)
+    myT2.t2(g)
+    T1_Output.step(i)
+    T2_Output.step(i)
+    print i, [x.bin for x in T1_Output.outputs], [y.bin for y in T2_Output.outputs]
+
+
 #LFSR
-sr = Bits(uint = 25, length = 25)
-sr_init = Bits(uint = 0, length = 25)
+'''
+    Example to test LFSR functionality.  sr contains the values to be used to initialise the LFSR; these have to be entered
+    one bit at a time starting from the LSB; hence the use of reverse() function.  The sr_init is used to set the LFSR registers
+    to zero before the start of serial initialisation.
+    The OPERATION_MODE constant is used to switch between initialisation and normal operation.  The initialisation is run for the length
+    of the LFSR; the initialise() method is deliberately called at each iteration of the test example but ONLY works when the OPERATION_MODE
+    flag is set, otherwise the normal operation runs.
+    Results were compared with those produced by LFSR_test and seen to be similar
+    NB: The printed result shows the current bit shifted into the position 1 (leftmost or input bit position) of the LFSR!!!
+        This is NOT showing the current state of the shift register!  However this can be deduced using the length of the LFSR
+        and knowing how many bits have been shifted in.
+        Also, running the for loop the length of the LFSR after initialisation, flushes out the initialisation bits so that the shift register
+        only contains newly calculated bits (i.e. xor'ed MSB_bit).  E.g. running the for loop 66 times for the LFSR3 (length = 33), flushes out
+        the initial 33 bits of the shift register and replaces them with the calculated (xor'ed) bits so that if the current state of the shift
+        register is printed, it would be seen to tally with the printed MSB_bit IN REVERSE though...for obvious reasons (the first printed MSB_bit
+        is the first to enter the shift register and so is the LSB of the shift register, i.e. appears on the right!)
+'''
+sr = Bits(uint = 25, length = 33)
+sr_init = Bits(uint = 0, length = 33)  # initialise LFSR to zeros
+sr_reversed = BitArray(sr)  # reverse seed bits for shifting into LFSR during initialisation
+sr_reversed.reverse()
 w = Bits('0b00')
 q = Bits('0b01')
-
 wSource = Source(w)
 qSource = Source(q)
-
-myLFSR = LFSR.lfsr1(sr_init)
-#myLFSR.OPERATION_MODE = 0
-#myLFSR.initialise(wSource)
+myLFSR = LFSR.lfsr3(sr_init)
 LFSROutput = Output(myLFSR)
 
-for i in range(45):
+
+for i in range(53):
     #if (i % 2):
         #myLFSR.initialise(wSource)
     #else:
         #myLFSR.initialise(qSource)
     
-    if (i < 25):
+    if (i < 33):
         myLFSR.OPERATION_MODE = 0
-        if (sr[i]):
+        if (sr_reversed[i]):
             m = Bits('0b01')
         else:
             m = Bits('0b00')
@@ -255,12 +328,13 @@ for i in range(45):
     
     myLFSR.initialise(Source(m))
     LFSROutput.step(i)
-    print i, LFSROutput
+    #print i, LFSROutput
+
 
 '''
 #myLFSR = LFSR.lfsr1(sr)
 for i in range(20):
-    myLFSR.OPERATION_MODE = 1
+    myLFSR.OPERATION_MODE = 0
     myLFSR.initialise(Source(q))
     LFSROutput.step(i)
     print i, LFSROutput

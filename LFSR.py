@@ -30,18 +30,22 @@ def LFSR_func(shift_register, tap_mask):
     shift_register = shift_register_update
     return int(xor_result_bit), shift_register
 '''
-
+LFSR1_mask = Bits(uint = 139297, length = 25)        #Bits('0b0000000100010000000100001')                L1
+LFSR2_mask = Bits(uint = 557185, length = 31)        #Bits('0b0000000000010001000000010000001')          L2
+LFSR3_mask = Bits(uint = 536871457, length = 33)     #Bits('0b000100000000000000000001000100001')        L3
+LFSR4_mask = Bits(uint = 34359740425, length = 39)   #Bits('0b000100000000000000000000000100000001001')  L4
 count = 0
-seed = Bits(uint = 25, length = 25)      #Bits('0b0000000000000000000011001')
-mask = Bits(uint = 139297, length = 25)  #Bits('0b0000000100010000000100001') L1
+seed = Bits(uint = 25, length = 33)      #Bits('0b0000000000000000000011001')
+#mask = Bits(uint = 139297, length = 25)  #Bits('0b0000000100010000000100001') L1
 #seed = Bits('0b01101000010')
-seed = Bits('0b0000000000000000000011001')
+#seed = Bits('0b0000000000000000000011001')
+mask = LFSR3_mask
 # test data used to verify LFSR functionality <http://www.cs.princeton.edu/courses/archive/fall11/cos126/assignments/lfsr.html>
 #seed = Bits('0b01000010110')
 #mask = Bits('0b00000000101')
 
 for xor, sr in LFSR(seed, mask):
-    if (count <= 20):
+    if (count < 20):
         print xor, sr.bin
         count += 1
     else:
