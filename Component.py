@@ -201,6 +201,7 @@ class LFSR(Component):
     def __init__(self, seed, LFSR_type):
         super(LFSR,self).__init__([])
         self.result = self.LFSR_func(seed, LFSR_type)
+        self.counter = 0
 
     @classmethod
     def lfsr1(cls, seed):
@@ -227,19 +228,28 @@ class LFSR(Component):
 
     def LFSR_func(self, shift_register, tap_mask):
         MSB_bit = 0
+        #counter = 0
         while True:
             taps = tap_mask.findall([1])
             list_of_taps = list(taps)                                   #get indices of taps
-            #xor_inputs = [shift_register[tap] for tap in list_of_taps]  #use tap indices for XOR operation
+            xor_inputs = [shift_register[tap] for tap in list_of_taps]  #use tap indices for XOR operation
+            def xor_operation(a,b): return a^b
 
             if not (self.OPERATION_MODE):
                 # In initialisation operation, input bit is used to update LFSR MSB
-                MSB_bit = self.input_bit.int
+                # Switch is closed when first input bit reaches right most position of LFSR
+                # When switch is closed, input bit is XOR'd with xor operation result to give
+                # new MSB_bit (not sure why I'm commenting this; seems obvious from code already!)
+                if (self.counter < tap_mask.len):
+                    MSB_bit = self.input_bit.int
+                elif (self.counter >= tap_mask.len):
+                    xor_result_bit = reduce(xor_operation, xor_inputs)
+                    MSB_bit = self.input_bit.int ^ xor_result_bit
                 
             elif (self.OPERATION_MODE):
                 # In normal operation, XOR operation is used to update MSB bit of LFSR
-                xor_inputs = [shift_register[tap] for tap in list_of_taps]  #use tap indices for XOR operation
-                def xor_operation(a,b): return a^b
+                #xor_inputs = [shift_register[tap] for tap in list_of_taps]  #use tap indices for XOR operation
+                #def xor_operation(a,b): return a^b
                 xor_result_bit = reduce(xor_operation, xor_inputs)
                 MSB_bit = xor_result_bit
 
@@ -261,7 +271,8 @@ class LFSR(Component):
                 X_bit = Bits('0b01')
             elif not (X):
                 X_bit = Bits('0b00')
-            yield int(MSB_bit), X_bit.int #, shift_register.bin            
+            yield int(MSB_bit)#, X_bit.int , shift_register.bin
+            self.counter += 1
 
     def step(self,t):
         if(len(self.outputs) == t):
@@ -287,14 +298,14 @@ myT1 = Bijection()
 myT2 = Bijection()
 T1_Output = Output(myT1)
 T2_Output = Output(myT2)
-print 'This is a bijection (T1 and T2) example:'
+#print 'This is a bijection (T1 and T2) example:'
 for i in range(4):
     g = Source(Bits(uint = i, length = 2))
     myT1.t1(g)
     myT2.t2(g)
     T1_Output.step(i)
     T2_Output.step(i)
-    print i, [x.bin for x in T1_Output.outputs], [y.bin for y in T2_Output.outputs]
+    #print i, [x.bin for x in T1_Output.outputs], [y.bin for y in T2_Output.outputs]
 
 
 #LFSR
@@ -324,16 +335,16 @@ w = Bits('0b00')
 q = Bits('0b01')
 wSource = Source(w)
 qSource = Source(q)
-myLFSR = LFSR.lfsr3(sr)
+myLFSR = LFSR.lfsr3(sr_init)
 LFSROutput = Output(myLFSR)
 myLFSR.OPERATION_MODE = 1 
 
-for i in range(33):
+for i in range(58):
     #if (i % 2):
         #myLFSR.initialise(wSource)
     #else:
         #myLFSR.initialise(qSource)
-    '''
+    
     if (i < 33):
         myLFSR.OPERATION_MODE = 0
         if (sr_reversed[i]):
@@ -341,11 +352,13 @@ for i in range(33):
         else:
             m = Bits('0b00')
     else:
-        myLFSR.OPERATION_MODE = 1         
-    '''
-    #myLFSR.initialise(Source(m))
+        myLFSR.OPERATION_MODE = 1
+        #m = Bits('0b01')
+        #myLFSR.OPERATION_MODE = 0
+    
+    myLFSR.initialise(Source(m))
     LFSROutput.step(i)
-    #print i, LFSROutput
+    print i, LFSROutput
 
 
 '''

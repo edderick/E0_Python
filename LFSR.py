@@ -45,7 +45,7 @@ mask = LFSR3_mask
 #mask = Bits('0b00000000101')
 
 for xor, sr in LFSR(seed, mask):
-    if (count < 20):
+    if (count < 25):
         print xor, sr.bin
         count += 1
     else:
