@@ -175,15 +175,16 @@ reload(Component)
 
 class TestLFSR(unittest.TestCase):
     def setUp(self):
-        self.LFSR  = Component.LFSR(Bits(uint = 0, length =25), 1)
+        a = BitArray('0b10101')
+        a.reverse()
+        self.LFSR  = Component.LFSR(Component.DynamicSource(a, Bits('0b0')), Bits('0b101'), 2)
         
     def test_lfsr(self):
         """Test LSFR"""
-        for i in range(2):
+        for i in range(6):
             self.LFSR.step(i)
-            
-        self.assertEqual(self.LFSR.outputs, [Bits('0b0')*25, Bits('0b1') * 25])
-        
+        self.assertEqual(self.LFSR.outputs, [False, False, True, False ,True, False])
+    
 TestLFSRSuite = unittest.TestLoader().loadTestsFromTestCase(TestLFSR)
 unittest.TextTestRunner(verbosity=2).run(TestLFSRSuite)
     
@@ -195,7 +196,7 @@ reload(Component)
 
 class TestDynamicSource(unittest.TestCase):
     def setUp(self):
-        self.dsource = Component.DynamicSource(Bits('0b001'), Bits('0b0'))
+        self.dsource = Component.DynamicSource(Bits('0b100'), Bits('0b0'))
     
     def test_dsource(self):
         """Test Dynamic Source"""
@@ -206,6 +207,21 @@ class TestDynamicSource(unittest.TestCase):
         
 TestDSourceSuite = unittest.TestLoader().loadTestsFromTestCase(TestDynamicSource)
 unittest.TextTestRunner(verbosity=2).run(TestDSourceSuite)
+
+# <codecell>
+
+LFSR1_mask = Bits(uint = 139297, length = 25)        #Bits('0b0000000100010000000100001')                L1
+LFSR2_mask = Bits(uint = 557185, length = 31)        #Bits('0b0000000000010001000000010000001')          L2
+LFSR3_mask = Bits(uint = 536871457, length = 33)     #Bits('0b000100000000000000000001000100001')        L3
+LFSR4_mask = Bits(uint = 34359740425, length = 39)   #Bits('0b000100000000000000000000000100000001001')  L4
+
+print LFSR1_mask
+print LFSR2_mask
+print LFSR3_mask
+print LFSR4_mask
+
+# <codecell>
+
 
 # <codecell>
 

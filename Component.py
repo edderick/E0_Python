@@ -186,6 +186,29 @@ class DynamicSource(Component):
         
 
 class LFSR(Component):
+    """LFSR Class """
+    
+    def __init__(self, dsource, mask, output_bit):
+        self.mask = mask
+        self.register = BitArray(uint = 0, length = len(mask))
+        self.outputBit = output_bit
+        super(LFSR, self).__init__([dsource])
+        
+    def stepfunc(self, t):
+        inputBit = self.inputs[0].outputs[t]
+        taps = list(self.mask.findall([1]))
+        xorInputs = [self.register[tap] for tap in taps]
+        
+        if(t >= len(self.mask)):
+           xorInputs.append(bool(inputBit))
+           input = Bits(uint = int(reduce(lambda x,y: x^y, xorInputs)), length = 1)
+        else:
+            input = inputBit
+        self.register >>=1
+        self.register = self.register | (input * len(self.register)) << (len(self.register) -1)
+        return self.register[self.outputBit]
+    
+class LFSRA(Component):
     """
     LFSR Class:
         Models an LFSR
