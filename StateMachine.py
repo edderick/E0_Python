@@ -11,7 +11,6 @@ from bitstring import *
 addr = Bits('0b0') * 48
 kcp = Bits('0b00000000') * 16
 clk = Bits('0b00000000') * 3 + Bits('0b11')
-print "clock", clk
 
 def b(bs, num):
     return bs[num*8: (num+1)*8]
@@ -89,8 +88,12 @@ output = Component.Output(bigXOR)
 
 for i in range(240):
     output.step(i)
+    
+for i in range(240):
+    print i, "Z", output.outputs[i].bin, "LSFRs", LFSR1.outputs[i].bin, LFSR2.outputs[i].bin, LFSR3.outputs[i].bin, LFSR4.outputs[i].bin, "C[t+1]", blendXOR.outputs[i].bin, "C[t]", topDelay.outputs[i].bin 
     #print i, "LSFR1", LFSR1.register,"LFSR2", LFSR2.register.bin, "LFSR3", LFSR3.register, "LFSR4", foo
     #print i, foo
+    
 
 # <codecell>
 
