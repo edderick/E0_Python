@@ -48,13 +48,14 @@ class Component(object):
     """
     step = -1
     def __init__(self, args):
-        self.inputs = args
+        self.inputs = list(args)
         self.outputs=[]
     
     def step(self,t):
+        print "Running step " + str(t) + "of class " + self.__class__.__name__
         for component in self.inputs:
             while(len(component.outputs) <= t):
-                component.step(t)
+                component.step(len(component.outputs))
         self.outputs.append(self.stepfunc(t))
     
     def stepfunc(self, t):
@@ -62,8 +63,23 @@ class Component(object):
     
     def __str__(self):
         return str(self.outputs)
+    
+    def addInput(self, input):
+        self.inputs.append(input)
         
-   
+class Slice(Component):
+    """
+    Slice Class
+    """
+    
+    def __init__(self,start,end,input):
+        self.start =start
+        self.end= end
+        super(Slice,self).__init__([input])
+        
+    def stepfunc(self,t):
+        return self.inputs[0].outputs[t][self.start:self.end]
+    
 class Source(Component):
     """
 ource Class:
@@ -101,7 +117,11 @@ class Adder(Component):
         super(Adder,self).__init__(inputs)
       
     def stepfunc(self, t):
-        return Bits(uint = reduce( lambda x,y: x.outputs[t].uint + y.outputs[t].uint , self.inputs) % 2**self.outputLength, length = self.outputLength)
+        print [x.outputs[t] for x in self.inputs]
+        total = 0
+        for i in self.inputs:
+            total+= i.outputs[t].uint
+        return Bits(uint = total % 2**self.outputLength, length= self.outputLength)
     
 class Delay(Component):
     """
@@ -114,18 +134,15 @@ class Delay(Component):
 
     def __init__(self, initialValue, arg):
         super(Delay, self).__init__([arg])
-        self.initialValue = initialValue
+        self.outputs = [initialValue]  
     
-    def astep(self,t):
-        if(len(self.outputs) == t):
-            self.outputs.append(self.stepfunc(t))
-
+    def step(self,t):
+        while(len(self.inputs[0].outputs) <= t-1):
+            self.inputs[0].step(len(self.inputs[0].outputs))
+        self.outputs.append(self.stepfunc(t))
+            
     def stepfunc(self, t):
-        print t
-        return  self.initialValue if t ==0 else self.inputs[0].outputs[t-1]
-    
-    def addInput(self,i):
-        self.inputs.append(i)
+        return self.inputs[0].outputs[t-1]
 
 class ExclusiveOR(Component):
     """
@@ -148,11 +165,13 @@ class Divider(Component):
         Performs division by 2 operation on input
     """
     
-    def __init__(self, *arg):
+    def __init__(self,outputLength, *arg):
+        self.outputLength = outputLength
         super(Divider, self).__init__(arg)
       
     def stepfunc(self, t):        
-        return self.inputs[0].outputs[t] >> 1
+        div = self.inputs[0].outputs[t] >> 1
+        return Bits(uint = div.uint % 2**self.outputLength, length = self.outputLength)
 
 class Bijection(Component):
     """
@@ -199,7 +218,7 @@ class LFSR(Component):
         taps = list(self.mask.findall([1]))
         xorInputs = [self.register[tap] for tap in taps]
         
-        retval = self.register[self.outputBit]
+        retval = self.register[self.outputBit:self.outputBit+1]
         if(t >= len(self.mask)):
            xorInputs.append(bool(inputBit))
            input = Bits(uint = int(reduce(lambda x,y: x^y, xorInputs)), length = 1)

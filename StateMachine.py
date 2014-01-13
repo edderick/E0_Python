@@ -60,13 +60,35 @@ LFSR2 = Component.LFSR(DSource2, mask2, output2)
 LFSR3 = Component.LFSR(DSource3, mask3, output3)
 LFSR4 = Component.LFSR(DSource4, mask4, output4)
 
+LFSRAdder = Component.Adder(3, LFSR1, LFSR2, LFSR3, LFSR4)
+
+blendAdder = Component.Adder(3, LFSRAdder)
+
+divider = Component.Divider(2, blendAdder)
+
+blendXOR = Component.ExclusiveOR(divider)
+
+topDelay =Component.Delay(Bits('0b00'),blendXOR)
+
+T1 = Component.Bijection(Component.Bijection.T1_values, topDelay)
+
+bottomDelay = Component.Delay(Bits('0b00'),topDelay)
+
+T2 = Component.Bijection(Component.Bijection.T2_values, bottomDelay)
+
+blendSlice = Component.Slice(0,1, topDelay)
+
+bigXOR = Component.ExclusiveOR(LFSR1, LFSR2, LFSR3, LFSR4, blendSlice)
+
+blendAdder.addInput(topDelay)
+blendXOR.addInput(T1)
+blendXOR.addInput(T2)
+
+
+output = Component.Output(bigXOR)
 
 for i in range(240):
-    LFSR1.step(i)
-    LFSR2.step(i)
-    LFSR3.step(i)
-    LFSR4.step(i)
-    print i, int(LFSR1.outputs[i]), int(LFSR2.outputs[i]),  int(LFSR3.outputs[i]), int(LFSR4.outputs[i])
+    output.step(i)
     #print i, "LSFR1", LFSR1.register,"LFSR2", LFSR2.register.bin, "LFSR3", LFSR3.register, "LFSR4", foo
     #print i, foo
 

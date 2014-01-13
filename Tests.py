@@ -53,7 +53,7 @@ reload(Component)
 
 class TestAdder(unittest.TestCase):
     def setUp(self):
-        self.adder = Component.Adder(3,Component.Source(Bits('0b01')), Component.Source(Bits('0b11')))
+        self.adder = Component.Adder(3,Component.Source(Bits('0b011')), Component.Source(Bits('0b111')),Component.Source(Bits('0b111')))
     
     def test_adder(self):
         """Test Adder(01, 11)"""
@@ -139,13 +139,13 @@ reload(Component)
 
 class TestDivider(unittest.TestCase):
     def setUp(self):
-        self.divider = Component.Divider(Component.Source(Bits('0b100')))
+        self.divider = Component.Divider(2,Component.Source(Bits('0b1101')))
         
     def test_divider(self):
         """Test Divider"""
         for i in range(2):
             self.divider.step(i)
-        self.assertEqual(self.divider.outputs, [Bits('0b010'), Bits('0b010')])
+        self.assertEqual(self.divider.outputs, [Bits('0b10'), Bits('0b10')])
                          
 TestDividerSuite = unittest.TestLoader().loadTestsFromTestCase(TestDivider)
 unittest.TextTestRunner(verbosity=2).run(TestDividerSuite)
@@ -189,6 +189,23 @@ TestLFSRSuite = unittest.TestLoader().loadTestsFromTestCase(TestLFSR)
 unittest.TextTestRunner(verbosity=2).run(TestLFSRSuite)
     
     
+
+# <codecell>
+
+reload(Component)
+
+class TestSlice(unittest.TestCase):
+    def setUp(self):
+        self.slice = Component.Slice(0,1, Component.Source(Bits('0b101')))
+    
+    def test_slice(self):
+        """Test Slice"""
+        for i in range(2):
+            self.slice.step(i)
+        self.assertEqual(self.slice.outputs, [Bits('0b1'), Bits('0b1')])
+         
+TestSliceSuite = unittest.TestLoader().loadTestsFromTestCase(TestSlice)
+unittest.TextTestRunner(verbosity=2).run(TestSliceSuite)
 
 # <codecell>
 
