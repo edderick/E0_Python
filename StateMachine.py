@@ -10,14 +10,16 @@ from bitstring import *
 
 addr = Bits('0b0') * 48
 kcp = Bits('0b00000000') * 16
-clk = Bits('0b00') * 13
+clk = Bits('0b00000000') * 3 + Bits('0b11')
+print "clock", clk
 
 def b(bs, num):
     return bs[num*8: (num+1)*8]
 
 initial1 = b(addr,2)+b(clk,1)+b(kcp, 12)+b(kcp,8)+b(kcp,4)+b(kcp,0)+Bits(uint = int(clk[24]), length =1)
-initial1 = BitArray(initital1)
+initial1 = BitArray(initial1)
 initial1.reverse()
+
 
 CLU = BitArray(clk[0:4])
 CLU.reverse()
@@ -35,7 +37,7 @@ initial3.reverse()
 initial4 = b(addr,5)+b(addr,1)+b(addr,15)+b(kcp,15)+b(kcp,11)+b(kcp,7)+b(kcp,3)+CLU+Bits('0b111')
 initial4 = BitArray(initial4)
 initial4.reverse()
-print "initital4", initial4.bin
+
 
 
 mask1 = Bits(uint = 139297, length = 25)        #Bits('0b0000000100010000000100001')                L1
@@ -64,7 +66,7 @@ for i in range(240):
     LFSR2.step(i)
     LFSR3.step(i)
     LFSR4.step(i)
-    print i, "X1" ,int(LFSR1.outputs[i]), "X2", int(LFSR2.outputs[i]), "X3", int(LFSR3.outputs[i]), "X4", int(LFSR4.outputs[i])
+    print i, int(LFSR1.outputs[i]), int(LFSR2.outputs[i]),  int(LFSR3.outputs[i]), int(LFSR4.outputs[i])
     #print i, "LSFR1", LFSR1.register,"LFSR2", LFSR2.register.bin, "LFSR3", LFSR3.register, "LFSR4", foo
     #print i, foo
 
