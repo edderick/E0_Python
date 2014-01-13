@@ -199,6 +199,7 @@ class LFSR(Component):
         taps = list(self.mask.findall([1]))
         xorInputs = [self.register[tap] for tap in taps]
         
+        retval = self.register[self.outputBit]
         if(t >= len(self.mask)):
            xorInputs.append(bool(inputBit))
            input = Bits(uint = int(reduce(lambda x,y: x^y, xorInputs)), length = 1)
@@ -206,7 +207,7 @@ class LFSR(Component):
             input = inputBit
         self.register >>=1
         self.register = self.register | (input * len(self.register)) << (len(self.register) -1)
-        return self.register[self.outputBit]
+        return retval
     
 class LFSRA(Component):
     """
