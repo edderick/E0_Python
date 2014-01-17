@@ -196,10 +196,7 @@ for i in output.outputs[240:240+(reqBytes*8)]:
 
 
 for i in range(reqBytes):
-    x = BitArray(b(keystream,i))
-    x.reverse()
-    print x.uint
-    #print b(keystream,i).uint
+    print b(keystream,i).uint
 print keystream
     #print i, "                                 ", LFSR1.outputs[i].bin, LFSR2.outputs[i].bin, LFSR3.outputs[i].bin, LFSR4.outputs[i].bin,"   ",output.outputs[i].bin, blendXOR.outputs[i].bin, "   ",topDelay.outputs[i].bin, bottomDelay.outputs[i].bin #,"blendslice[t]", blendSlice.outputs[i].bin
     #print i, "Z", output.outputs[i].bin, "LSFRs", LFSR1.outputs[i].bin, LFSR2.outputs[i].bin, LFSR3.outputs[i].bin, LFSR4.outputs[i].bin, "C[t+1]", blendXOR.outputs[i].bin, "C[t]", topDelay.outputs[i].bin 
