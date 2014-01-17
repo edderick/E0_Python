@@ -8,28 +8,37 @@ reload(Component)
 
 from bitstring import *
 
-addr = Bits('0b0') * 48
-kcp = Bits('0b00000000') * 16
-clk = Bits('0b00000000') * 3 + Bits('0b11')
+reqBytes = 16
+addr = Bits('0x2c7f94560f1b')
+kcp = Bits('0x2187f04aba9031d0780d4c53e0153a63')
+clk = Bits('0x5f1a00') + Bits('0b10')
 
 def b(bs, num):
     return bs[num*8: (num+1)*8]
 
-initial1 = b(addr,2)+b(clk,1)+b(kcp, 12)+b(kcp,8)+b(kcp,4)+b(kcp,0)+Bits(uint = int(clk[24]), length =1)
+print "clock", len(clk), clk
+print "addr", len(addr),addr
+print "kcp", len(kcp),kcp
+print "kcp[0]", b(kcp,0).bin
+print "clk[24]", clk[24]
+
+initial1 = b(addr,2)+b(clk,1)+b(kcp, 12)+b(kcp,8)+b(kcp,4)+b(kcp,0)+Bits(uint = int(clk[23]), length =1)
 initial1 = BitArray(initial1)
 initial1.reverse()
 
+print "initital1",initial1
 
 CLU = BitArray(clk[0:4])
-CLU.reverse()
+#CLU.reverse()
 
 CLL = BitArray(clk[4:8])
 CLL.reverse()
+
 initial2 = b(addr,3)+b(addr,0)+b(kcp,13)+b(kcp,9)+b(kcp,5)+b(kcp,1)+CLL+Bits('0b001')
 initial2 = BitArray(initial2)
 initial2.reverse()
 
-initial3 = b(addr,4)+b(clk,2)+b(kcp,14)+b(kcp,10)+b(kcp,6)+b(kcp,2)+Bits(uint = int(clk[25]), length=1)
+initial3 = b(addr,4)+b(clk,2)+b(kcp,14)+b(kcp,10)+b(kcp,6)+b(kcp,2)+Bits(uint = int(clk[24]), length=1)
 initial3 = BitArray(initial3)
 initial3.reverse()
 
@@ -86,11 +95,27 @@ blendXOR.addInput(T2)
 
 output = Component.Output(bigXOR)
 
+registers = []
+
 for i in range(240):
+    ou1 = BitArray(LFSR1.register)
+    ou1.reverse()
+    ou2 = BitArray(LFSR2.register)
+    ou2.reverse()
+    ou3 = BitArray(LFSR3.register)
+    ou3.reverse()
+    ou4 = BitArray(LFSR4.register)
+    ou4.reverse()
+
+    registers.append((Bits(uint = ou1.uint, length=28).hex, Bits(uint = ou2.uint, length=32).hex, Bits(uint = ou3.uint, length =36).hex, Bits(uint = ou4.uint, length=40).hex))
+
+
     if(i <=40):
         topDelay.outputs[-1] = Bits('0b00')
         bottomDelay.outputs[-1] = Bits('0b00')
+
     output.step(i)
+
 
 Z = output.outputs[112:240] #Last 128 bits generated
 
@@ -124,24 +149,57 @@ LFSR4.register = update4
 
 #blendXOR.outputs.append(blendXOR.outputs[-1])
 
-#print "len", len(topDelay.outputs), len(bottomDelay.outputs), len(blendXOR.outputs)
+print "len", len(topDelay.outputs), len(bottomDelay.outputs), len(blendXOR.outputs)
+blendXOR.step(239)
+
 topDelay.outputs.append(topDelay.outputs[-1])
 bottomDelay.outputs.append(bottomDelay.outputs[-1])
-bottomDelay.outputs.append(bottomDelay.outputs[-1])
+#bottomDelay.outputs.append(bottomDelay.outputs[-1])
 
 #while(len(blendXOR.outputs) <= 240):
  #   blendXOR.outputs.append(Bits('0b00'))
 
-for i in range(240,341):
-    output.step(i)
-    
-#LFSR2 has a problem
+for i in range(240,500):
+    ou1 = BitArray(LFSR1.register)
+    ou1.reverse()
+    ou2 = BitArray(LFSR2.register)
+    ou2.reverse()
+    ou3 = BitArray(LFSR3.register)
+    ou3.reverse()
+    ou4 = BitArray(LFSR4.register)
+    ou4.reverse()
 
-for i in range(240,340):
-    print i, "                                 ", LFSR1.outputs[i].bin, LFSR2.outputs[i].bin, LFSR3.outputs[i].bin, LFSR4.outputs[i].bin,"   ",output.outputs[i].bin, blendXOR.outputs[i].bin, "   ",topDelay.outputs[i].bin, bottomDelay.outputs[i].bin #,"blendslice[t]", blendSlice.outputs[i].bin
-    print
+    registers.append((Bits(uint = ou1.uint, length=28).hex, Bits(uint = ou2.uint, length=32).hex, Bits(uint = ou3.uint, length =36).hex, Bits(uint = ou4.uint, length=40).hex))
+
+    output.step(i)
+
+
+
+keystream = BitArray()
+for bit in output.outputs[240:240+reqBytes*8]:
+    keystream +=bit
+#print [x.bin for x in output.outputs[240:]]
+
+#for i in range(reqBytes):
+#    print b(keystream,i).uint
+#print keystream
+
+    
+for i in range(340):
+    print i, registers[i][0], registers[i][1], registers[i][2], registers[i][3], "    ",LFSR1.outputs[i].bin, LFSR2.outputs[i].bin, LFSR3.outputs[i].bin, LFSR4.outputs[i].bin, "   ", output.outputs[i].bin,  "    ",blendXOR.outputs[i].bin, \
+            topDelay.outputs[i].bin, bottomDelay.outputs[i].bin
+
+
+keystream = BitArray()
+for i in output.outputs[240:240+(reqBytes*8)]:
+    keystream +=i
+
+
+for i in range(reqBytes):
+    print b(keystream,i).uint
+print keystream
+    #print i, "                                 ", LFSR1.outputs[i].bin, LFSR2.outputs[i].bin, LFSR3.outputs[i].bin, LFSR4.outputs[i].bin,"   ",output.outputs[i].bin, blendXOR.outputs[i].bin, "   ",topDelay.outputs[i].bin, bottomDelay.outputs[i].bin #,"blendslice[t]", blendSlice.outputs[i].bin
     #print i, "Z", output.outputs[i].bin, "LSFRs", LFSR1.outputs[i].bin, LFSR2.outputs[i].bin, LFSR3.outputs[i].bin, LFSR4.outputs[i].bin, "C[t+1]", blendXOR.outputs[i].bin, "C[t]", topDelay.outputs[i].bin 
-    #print i, "LSFR1", LFSR1.register,"LFSR2", LFSR2.register.bin, "LFSR3", LFSR3.register, "LFSR4", foo
     #print i, foo
     #print i, output.outputs[i].bin
 
