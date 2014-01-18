@@ -1,17 +1,31 @@
-# -*- coding: utf-8 -*-
-# <nbformat>3.0</nbformat>
-
-# <codecell>
-
 import Component
-reload(Component)
-
 from bitstring import *
+import argparse
+import io
 
-reqBytes = 16
+parser = argparse.ArgumentParser(description="Decrypt/Encrypt a file")
+parser.add_argument('file', type=str, help="File to encrypt/decrypt")
+parser.add_argument('fileOut', type=str, help="File to output to")
+
+args = parser.parse_args()
+
+txt = Bits(filename=args.file)
+"""
+f = open(args.file, 'rb')
+
+contents = f.read()
+"""
+
+reqBits = len(txt)
+
+"""
 addr = Bits('0x2c7f94560f1b')
 kcp = Bits('0x2187f04aba9031d0780d4c53e0153a63')
 clk = Bits('0x5f1a00') + Bits('0b10')
+"""
+addr = Bits('0b0') * 48
+kcp = Bits('0b0') * 128
+clk = Bits('0b0') * 26
 
 def b(bs, num):
     return bs[num*8: (num+1)*8]
@@ -154,11 +168,49 @@ blendXOR.step(239)
 
 topDelay.outputs.append(topDelay.outputs[-1])
 bottomDelay.outputs.append(bottomDelay.outputs[-1])
+
+
+for i in range(240, 240+reqBits):
+    output.step(i)
+
+
+keystream = reduce(lambda x,y: x+y, output.outputs[240:])
+
+tmp = BitArray()
+for i in range(len(keystream)/8):
+    a = BitArray(b(keystream,i))
+    a.reverse()
+    tmp +=a
+
+keystream = tmp
+
+cipheredTxt = keystream ^ txt
+
+tmp = []
+print "txt in", txt
+print "txt in as bytes", txt
+print "keystream", keystream
+
+"""
+for i in range(len(cipheredTxt)/8):
+    a = BitArray(b(cipheredTxt,i))
+    a.reverse()
+    print a.bytes
+"""
+print "txt out", cipheredTxt
+
+print "txt out as bytes", cipheredTxt.bytes
+
+f = open(args.fileOut, 'wb')
+f.write(cipheredTxt.bytes)
+
+
 #bottomDelay.outputs.append(bottomDelay.outputs[-1])
 
 #while(len(blendXOR.outputs) <= 240):
  #   blendXOR.outputs.append(Bits('0b00'))
 
+"""
 for i in range(240,500):
     ou1 = BitArray(LFSR1.register)
     ou1.reverse()
@@ -172,12 +224,12 @@ for i in range(240,500):
     registers.append((Bits(uint = ou1.uint, length=28).hex, Bits(uint = ou2.uint, length=32).hex, Bits(uint = ou3.uint, length =36).hex, Bits(uint = ou4.uint, length=40).hex))
 
     output.step(i)
+"""
 
 
-
-keystream = BitArray()
-for bit in output.outputs[240:240+reqBytes*8]:
-    keystream +=bit
+#keystream = BitArray()
+#for bit in output.outputs[240:240+reqBits]:
+#    keystream +=bit
 #print [x.bin for x in output.outputs[240:]]
 
 #for i in range(reqBytes):
@@ -185,28 +237,26 @@ for bit in output.outputs[240:240+reqBytes*8]:
 #print keystream
 
     
-for i in range(340):
-    print i, registers[i][0], registers[i][1], registers[i][2], registers[i][3], "    ",LFSR1.outputs[i].bin, LFSR2.outputs[i].bin, LFSR3.outputs[i].bin, LFSR4.outputs[i].bin, "   ", output.outputs[i].bin,  "    ",blendXOR.outputs[i].bin, \
-            topDelay.outputs[i].bin, bottomDelay.outputs[i].bin
+#for i in range(340):
+#    print i, registers[i][0], registers[i][1], registers[i][2], registers[i][3], "    ",LFSR1.outputs[i].bin, LFSR2.outputs[i].bin, LFSR3.outputs[i].bin, LFSR4.outputs[i].bin, "   ", output.outputs[i].bin,  "    ",blendXOR.outputs[i].bin, \
+#            topDelay.outputs[i].bin, bottomDelay.outputs[i].bin
 
 
-keystream = BitArray()
-for i in output.outputs[240:240+(reqBytes*8)]:
-    keystream +=i
+#keystream = BitArray()
+#for i in output.outputs[240:240+(reqBytes*8)]:
+#    keystream +=i
 
 
-for i in range(reqBytes):
-    x = BitArray(b(keystream,i))
-    x.reverse()
-    print x.uint
+#for i in range(reqBytes):
+#    x = BitArray(b(keystream,i))
+#    x.reverse()
+#    print x.uint
     #print b(keystream,i).uint
-print keystream
+#print keystream
     #print i, "                                 ", LFSR1.outputs[i].bin, LFSR2.outputs[i].bin, LFSR3.outputs[i].bin, LFSR4.outputs[i].bin,"   ",output.outputs[i].bin, blendXOR.outputs[i].bin, "   ",topDelay.outputs[i].bin, bottomDelay.outputs[i].bin #,"blendslice[t]", blendSlice.outputs[i].bin
     #print i, "Z", output.outputs[i].bin, "LSFRs", LFSR1.outputs[i].bin, LFSR2.outputs[i].bin, LFSR3.outputs[i].bin, LFSR4.outputs[i].bin, "C[t+1]", blendXOR.outputs[i].bin, "C[t]", topDelay.outputs[i].bin 
     #print i, foo
     #print i, output.outputs[i].bin
-
-# <codecell>
 
 
 # <codecell>
