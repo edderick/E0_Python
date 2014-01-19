@@ -176,6 +176,7 @@ for i in range(240, 240+reqBits):
 
 keystream = reduce(lambda x,y: x+y, output.outputs[240:])
 
+"""
 tmp = BitArray()
 for i in range(len(keystream)/8):
     a = BitArray(b(keystream,i))
@@ -183,6 +184,7 @@ for i in range(len(keystream)/8):
     tmp +=a
 
 keystream = tmp
+"""
 
 cipheredTxt = keystream ^ txt
 
