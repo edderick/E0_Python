@@ -1,3 +1,8 @@
+# -*- coding: utf-8 -*-
+# <nbformat>3.0</nbformat>
+
+# <codecell>
+
 # LFSR function
 
 from bitstring import *
@@ -54,7 +59,4 @@ for xor, sr in LFSR(seed, mask):
 
 #xor, sr = LFSR_func(seed, mask)
 #for i in range(20)
-    
 
-
-        

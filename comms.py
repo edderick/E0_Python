@@ -1,3 +1,8 @@
+# -*- coding: utf-8 -*-
+# <nbformat>3.0</nbformat>
+
+# <codecell>
+
 import socket
 from pack import *
   
@@ -53,3 +58,4 @@ def connect(addr, port):
   """
   conn = socket.create_connection((addr, port))
   return conn
+

@@ -1,3 +1,8 @@
+# -*- coding: utf-8 -*-
+# <nbformat>3.0</nbformat>
+
+# <codecell>
+
 import struct
 import array
 import os
@@ -56,3 +61,4 @@ def unpack_data(data):
   d = bytearray(d)
   return (type,clock,length,d)
 print unpack_data(pack_data(7, 'Hello'))
+

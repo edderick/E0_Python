@@ -327,10 +327,3 @@ class LFSRA(Component):
     def stepfunc(self, t):
         return self.outputs.append(self.result.next())
 
-
-# <codecell>
-
-
-# <codecell>
-
-

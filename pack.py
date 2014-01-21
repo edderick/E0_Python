@@ -1,3 +1,8 @@
+# -*- coding: utf-8 -*-
+# <nbformat>3.0</nbformat>
+
+# <codecell>
+
 import struct
 import array
 import os
@@ -53,3 +58,4 @@ def unpack_data(data):
   d = struct.unpack('>' + ('B' * length), data[12:12+length])
   d = bytearray(d)
   return (type,clock,length,d)
+

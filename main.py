@@ -1,3 +1,8 @@
+# -*- coding: utf-8 -*-
+# <nbformat>3.0</nbformat>
+
+# <codecell>
+
 import sys
 import argparse
 import comms
@@ -29,5 +34,4 @@ for clock in range(20):
  print conn.recv_data()
 
 conn.stream.close()
-
 

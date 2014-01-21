@@ -1,3 +1,8 @@
+# -*- coding: utf-8 -*-
+# <nbformat>3.0</nbformat>
+
+# <codecell>
+
 # LFSR example
 
 def LFSR(seed, taps):
@@ -56,5 +61,4 @@ for xor, pattern in LFSR3(0b110010010, 0b111000010):
             count = 0
             break
 '''
-
 

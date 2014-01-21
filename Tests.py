@@ -15,7 +15,6 @@
 #     * Source
 #     * Divider
 # * Test XORing encryption/decryption.
-# 
 
 # <codecell>
 
@@ -43,9 +42,6 @@ class TestStreamXOR(unittest.TestCase):
 
 XORSuite = unittest.TestLoader().loadTestsFromTestCase(TestStreamXOR)
 unittest.TextTestRunner(verbosity=2).run(XORSuite)
-
-# <codecell>
-
 
 # <codecell>
 
@@ -236,13 +232,4 @@ print LFSR1_mask
 print LFSR2_mask
 print LFSR3_mask
 print LFSR4_mask
-
-# <codecell>
-
-
-# <codecell>
-
-
-# <codecell>
-
 

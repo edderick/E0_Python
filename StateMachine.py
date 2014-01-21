@@ -1,3 +1,8 @@
+# -*- coding: utf-8 -*-
+# <nbformat>3.0</nbformat>
+
+# <codecell>
+
 import Component
 from bitstring import *
 import argparse
@@ -259,8 +264,4 @@ for i in range(240,500):
     #print i, "Z", output.outputs[i].bin, "LSFRs", LFSR1.outputs[i].bin, LFSR2.outputs[i].bin, LFSR3.outputs[i].bin, LFSR4.outputs[i].bin, "C[t+1]", blendXOR.outputs[i].bin, "C[t]", topDelay.outputs[i].bin 
     #print i, foo
     #print i, output.outputs[i].bin
-
-
-# <codecell>
-
 
