@@ -1,8 +1,3 @@
-# -*- coding: utf-8 -*-
-# <nbformat>3.0</nbformat>
-
-# <codecell>
-
 import socket
 from pack import *
   
@@ -17,11 +12,12 @@ class Connection:
     self.stream.write(binary_data)
     self.stream.flush()
   def __recv(self, minlength):
+      print 'waiting to read ', minlength
       return self.stream.read(minlength)
   def send_neg(self, ID):
     self.__send(pack_neg(ID))
   def recv_neg(self):
-   return unpack_neg(self.__recv(8))
+   return unpack_neg(self.__recv(10))
   def send_init(self, clock, rand, link_key):
     self.__send(pack_init(clock,rand,link_key))
   def recv_init(self):

@@ -9,13 +9,13 @@ import os
 
 def pack_neg(ID):
  type = 0
- id = ID
- data = struct.pack('>II', type, id)
+ id = ID.bytes
+ data = struct.pack('>Is', type, id)
  return data
 
 def unpack_neg(data):
- type,id = struct.unpack('>II', data[:8])
- return (type,id)
+ type,id = struct.unpack('>Is', data[:10])
+ return (type,Bits(bytes=id))
 
 def pack_init(clock, RAND, link_key):
   #clock - 26 bits, but lets send 32

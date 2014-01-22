@@ -1,55 +1,53 @@
-# -*- coding: utf-8 -*-
-# <nbformat>3.0</nbformat>
-
-# <markdowncell>
-
-# #Test Posting Data to site
-
-# <codecell>
-
 import urllib2
 import urllib
+import web
+import bitstring
+import StateMachine
+import main
+
+amMaster = False
+
 
 def postTo(domain,port,slug, vals, method, role):
-    
     protocol = 'http'
     url = protocol + '://' + domain + ':' + port + '/' + slug
     rolequery = 'role=' + role
     
     data = urllib.urlencode(vals)
-    
-    
-    if(method == 'get'):
-        print 'method: get'
-        req = urllib2.Request(url + '?' + rolequery + '&' +  data)
-    elif(method == 'post'):
-        print 'method: post'
-        req = urllib2.Request(url + '?' + rolequery, data)
-    else:
-        print 'bad method'
+    req = urllib2.Request(url + '?' + rolequery, data)
     response = urllib2.urlopen(req)
     
-    print url + '?' + rolequery + '&' + data
-    print response.read()
+    return response.read()
         
+urls = ('/Kc', 'Kc','/isMaster', 'isMaster', '/message', 'Message')
 
-vals  = {
- 'content' : 'some',
-'msg' : 'rand'}
+class isMaster:
+  def GET(self):
+    return main.ID < main.otherID
 
-domain = 'localhost'
-port = '8000'
-slug = 'keyStream'
+class Kc:
+  def POST(self):
+    data = web.input()
+    main.kcPrime = Bits(hex=data.Kc)
+    return 1
 
-postTo(domain, port, slug, vals, 'post', 'slave')
+class Message:
+  def POST(self):
+    data = web.input()
+    plaintext = Bits(bytes=data.plaintext)
+    main.clock = Bits(uint=main.clock.uint + 1, length=26)
+     
+    keystream,ciphertext = StateMachine.encipher(main.masterID, main.kcPrime,
+    main.clock, plaintext)
+    main.conn.send_data(clock.uint, ciphertext.bytes)
+
+    main.send_log()
+    
+    return 1
 
 
-# <codecell>
-
-
-# <codecell>
-
-
-# <codecell>
-
+def start_server(globals):
+  if __name__ == '__main__':
+    app = web.application(urls, globals())
+    app.run()
 
