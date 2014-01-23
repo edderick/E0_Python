@@ -61,9 +61,14 @@ if __name__ == '__main__':
 		while(True):
 		 data = g.conn.recv_data()
 		 print "Recieved some Data"
-		 g.clock,plaintext = Bits(uint=data[1], length=26), Bits(bytes=data[3])
+		 temp = BitArray(uint=data[1], length=26)
+
+		 g.clock,plaintext = temp, Bits(bytes=data[3])
+         	 
+		 rev = BitArray(g.clock)
+		 rev.reverse()
 		 print "clock: ", g.clock
-		 keystream,cipheredTxt =StateMachine.encipher(g.masterID, g.kcPrime, g.clock,
+		 keystream,cipheredTxt =StateMachine.encipher(g.masterID, g.kcPrime, rev,
 		 plaintext)
 		 g.send_log(True, g.ID == g.masterID, keystream, plaintext, cipheredTxt)
 

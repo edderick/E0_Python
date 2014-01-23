@@ -3,6 +3,7 @@ from bitstring import *
 
 def encipher(masterAddr, kcPrime, clock, txt):
 
+  print 'clock: ', clock.uint
   reqBits = len(txt)
 
   addr = masterAddr

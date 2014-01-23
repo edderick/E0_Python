@@ -38,8 +38,10 @@ class Message:
     print 'recieved message request'
     data = web.input()
     plaintext = Bits(bytes=data.plaintext.encode('utf-8')) 
+    rev = BitArray(g.clock)
+    rev.reverse()
     keystream,ciphertext =StateMachine.encipher(g.masterID, g.kcPrime,
-    g.clock, plaintext)
+    rev, plaintext)
     print "Sending forward Data"
     g.conn.send_data(g.clock.uint, ciphertext.bytes)
 
