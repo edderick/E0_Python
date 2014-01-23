@@ -23,7 +23,7 @@ urls = ('/Kc', 'Kc','/isMaster', 'isMaster', '/message', 'Message')
 
 class isMaster:
   def GET(self):
-    print 'recieved isMaster request'
+    print 'recieved isMaster request, will return ', g.ID ==g.masterID
     return g.ID == g.masterID
 
 class Kc:

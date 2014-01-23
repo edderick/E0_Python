@@ -1,7 +1,6 @@
 import urllib2
 import urllib
-import tornado.ioloop
-import tornado.web
+import web
 import threading
 from bitstring import *
 import StateMachine
@@ -24,7 +23,7 @@ urls = ('/Kc', 'Kc','/isMaster', 'isMaster', '/message', 'Message')
 
 class isMaster:
   def GET(self):
-    print 'recieved isMaster request'
+    print 'recieved isMaster request, will return ', g.ID ==g.masterID
     return g.ID == g.masterID
 
 class Kc:
@@ -38,7 +37,7 @@ class Message:
   def POST(self):
     print 'recieved message request'
     data = web.input()
-    plaintext = Bits(bytes=data.plaintext.encode('utf-8'))
+    plaintext = Bits(bytes=data.plaintext.encode('plaintext'))
     g.clock = Bits(uint=g.clock.uint + 1, length=26)
      
     keystream,ciphertext =StateMachine.encipher(g.masterID, g.kcPrime,
