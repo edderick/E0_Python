@@ -64,7 +64,7 @@ if __name__ == '__main__':
 		 g.clock,plaintext = Bits(uint=data[1], length=26), Bits(bytes=data[3])
 		 keystream,cipheredTxt =StateMachine.encipher(g.masterID, g.kcPrime, g.clock,
 		 plaintext)
-		 g.send_log(True, g.ID == g.masterID, keystream, cipheredTxt, plaintext)
+		 g.send_log(True, g.ID == g.masterID, keystream, plaintext, cipheredTxt)
 
 	thread.start_new_thread(do_sockets, ())
 	print 'started sockets thread'

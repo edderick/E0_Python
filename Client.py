@@ -30,16 +30,14 @@ class Kc:
   def POST(self):
     data = web.input()
     g.kcPrime = Bits(hex=data.Kc)
-    print 'recieved Kc request'
+    print 'recieved Kc request, set KcPrime to:', g.kcPrime
     return 1
 
 class Message:
   def POST(self):
     print 'recieved message request'
     data = web.input()
-    plaintext = Bits(bytes=data.plaintext.encode('utf-8'))
-    g.clock = Bits(uint=g.clock.uint + 1, length=26)
-     
+    plaintext = Bits(bytes=data.plaintext.encode('utf-8')) 
     keystream,ciphertext =StateMachine.encipher(g.masterID, g.kcPrime,
     g.clock, plaintext)
     print "Sending forward Data"

@@ -52,7 +52,7 @@ def encipher(masterAddr, kcPrime, clock, txt):
   output3 = 31
   output4 = 31
 
-  #Dynamic Sources
+  #Dynamicources
   DSource1 = Component.DynamicSource(initial1,Bits('0b0'))
   DSource2 = Component.DynamicSource(initial2,Bits('0b0'))
   DSource3 = Component.DynamicSource(initial3,Bits('0b0'))
@@ -65,7 +65,7 @@ def encipher(masterAddr, kcPrime, clock, txt):
   LFSR4 = Component.LFSR(DSource4, mask4, output4)
 
 
-  #Component Setup
+  #Componentetup
   LFSRAdder = Component.Adder(3, LFSR1, LFSR2, LFSR3, LFSR4)
   blendAdder = Component.Adder(3, LFSRAdder)
   divider = Component.Divider(2, blendAdder)
@@ -117,6 +117,7 @@ def encipher(masterAddr, kcPrime, clock, txt):
 
 
   #Hold Ct and Ct-1
+  blendXOR.step(239)
   topDelay.outputs.append(topDelay.outputs[-1])
   bottomDelay.outputs.append(bottomDelay.outputs[-1])
 
