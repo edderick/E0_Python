@@ -43,7 +43,7 @@ class Message:
     g.clock, plaintext)
     g.conn.send_data(g.clock.uint, ciphertext.bytes)
 
-    g.send_log(False, g.ID == g.masterID, keystream, ciphertext, plaintext)
+    g.send_log(false, g.ID == g.masterID, keystream, ciphertext, plaintext)
     
     return 1
 

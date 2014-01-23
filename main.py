@@ -3,55 +3,72 @@ import argparse
 import comms
 import os
 import io
-import StateMachine
 import Client
 import base64
 from bitstring import *
-
-parser = argparse.ArgumentParser(description="Create a socket connection")
-parser.add_argument('addr', type=str, default="0.0.0.0",  help="what domain name/ipaddress to connect to?")
-parser.add_argument('-p', type=int, default=2000, help="port to connect to, or with -l option, port to listen on.", dest="port")
-parser.add_argument('-l', dest="listen", action='store_true', help="Run as server, listen for connections.")
-args = parser.parse_args()
+import StateMachine
+import socket
+import thread
+import g
 
 
-conn = comms.listen(args.port) if args.listen else comms.connect(args.addr, args.port)
-stream = conn.makefile(mode='rwb')
-conn = comms.Connection(stream)
+if __name__ == '__main__':
 
-#RAND = os.urandom(16)
-ID = Bits('0b01') * 24
+	parser = argparse.ArgumentParser(description="Create a socket connection")
+	parser.add_argument('addr', type=str, default="0.0.0.0",  help="what domain name/ipaddress to connect to?")
+	parser.add_argument('-p', type=int, default=2000, help="port to connect to, or with -l option, port to listen on.", dest="port")
+	parser.add_argument('-l', dest="listen", action='store_true', help="Run as server, listen for connections.")
+	parser.add_argument('-k', type=int, default=8888, help="Port to talk to web server with", dest='httpPort')
+	args = parser.parse_args()
 
-conn.send_neg(ID)
-print 'waiting for otherID'
-_,otherID = conn.recv_neg()
-print 'got other ID:', otherID
 
-masterID = max(Id, otherID)
+	g.clock = Bits('0b0') * 26
+	g.kcPrime = Bits('0b0') * 128
+	#Server or Client?
+	if(args.listen):
+	    serversock = comms.bind(args.port)
+	    g.conn = comms.Connection(comms.listen(serversock))
+	else:
+	    g.conn = comms.Connection(comms.connect(socket.getfqdn(), args.port))
 
-def send_log():
-   vals = {
-   "CLK" : clock.uint,
-   "BD_ADDR" : ID.hex,
-   "is_recieving" : True,
-   "keystream" : base64.b64encode(keystream.bytes),
-   "ciphertext" : base64.b64encode(ciphertext.bytes),
-   "plaintext" : plaintext.bytes,
-   "timestamp" : '22nd janudary' }
+	g.httpPort = args.httpPort
+	print 'httpPort: ', g.httpPort
 
-   Client.postTo('localhost', '8000', 'log', vals, 'POST', 'master')
-  
+	g.ID = Bits(bytes = os.urandom(6))
+	g.conn.send_neg(g.ID.bytes)
+	print 'waiting for otherID'
+	g.otherID = Bits(bytes=g.conn.recv_neg()[1])
+	print 'got other ID:', g.otherID
 
-#One Direction
-while(True):
- data = conn.recv_data()
- clock,plaintext = Bits(data[1], length=26), Bits(bytes=data[3])
- keystream,cipheredTxt = StateMachine.gen_keystream(masterID, kcPrime, clock,
- plaintext)
- 
 
-#Other Direction
-Client.start_server()
-  
+	def master(ours, theirs):
+	    o = ours.bytes
+	    t = theirs.bytes
+	    for i in range(len(o)):
+		if(o[i] > t[i]):
+		    return ours
+		elif(t[i] > o[i]):
+		    return theirs
+
+
+
+	g.masterID = master(g.ID, g.otherID)
+	print 'Master BD_ADDR is: ', g.masterID
+
+	
+	  
+	thread.start_new_thread(Client.start_server(), ())
+
+	#One Direction
+	while(True):
+	 data = g.conn.recv_data()
+	 g.clock,plaintext = Bits(data[1], length=26), Bits(bytes=data[3])
+	 keystream,cipheredTxt =StateMachine.gen_keystream(g.masterID, g.kcPrime, g.clock,
+	 plaintext)
+	 g.send_log(True, g.ID == g.masterID, keystream, cipheredTxt, plaintext)
+	 
+
+
+	  
   
 
