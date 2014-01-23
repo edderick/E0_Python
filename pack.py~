@@ -1,3 +1,8 @@
+# -*- coding: utf-8 -*-
+# <nbformat>3.0</nbformat>
+
+# <codecell>
+
 import struct
 import array
 import os
@@ -5,11 +10,12 @@ import os
 def pack_neg(ID):
  type = 0
  id = ID
- data = struct.pack('>II', type, id)
+ data = struct.pack('>I', type) + id
  return data
 
 def unpack_neg(data):
- type,id = struct.unpack('>II', data[:8])
+ type, = struct.unpack('>I', data[:4])
+ id = data[4:]
  return (type,id)
 
 def pack_init(clock, RAND, link_key):
@@ -53,3 +59,4 @@ def unpack_data(data):
   d = struct.unpack('>' + ('B' * length), data[12:12+length])
   d = bytearray(d)
   return (type,clock,length,d)
+

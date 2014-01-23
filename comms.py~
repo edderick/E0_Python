@@ -6,8 +6,8 @@ class Connection:
   """ 
   Handles communication between the two bluetooth fakes.
   """
-  def __init__(self,stream):
-    self.stream = stream
+  def __init__(self,s):
+    self.stream = s.makefile(mode='rwb')
   def __send(self, binary_data):
     self.stream.write(binary_data)
     self.stream.flush()
@@ -16,7 +16,7 @@ class Connection:
   def send_neg(self, ID):
     self.__send(pack_neg(ID))
   def recv_neg(self):
-   return unpack_neg(self.__recv(8))
+   return unpack_neg(self.__recv(10))
   def send_init(self, clock, rand, link_key):
     self.__send(pack_init(clock,rand,link_key))
   def recv_init(self):
@@ -29,18 +29,13 @@ class Connection:
       extra_data = self.__recv(l)
       return unpack_data(data+extra_data)
 
-
-
-
-
-def listen(port):
-  """
-  Listen on port for incoming tcp connection.
-  Accept first connection attempt and return socket handle.
-  """
-  s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-  s.bind(('', port))
+def bind(port):
+    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    s.bind(('',port))
+    return s
+def listen(s):
   s.listen(0)
+  print 'socket listening'
   conn, addr = s.accept()
   print('accepted connection from %s', addr)
   return conn
@@ -53,3 +48,4 @@ def connect(addr, port):
   """
   conn = socket.create_connection((addr, port))
   return conn
+
