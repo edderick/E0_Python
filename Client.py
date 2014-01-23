@@ -1,6 +1,7 @@
 import urllib2
 import urllib
 import web
+import threading
 from bitstring import *
 import StateMachine
 import main
@@ -41,6 +42,7 @@ class Message:
      
     keystream,ciphertext =StateMachine.encipher(g.masterID, g.kcPrime,
     g.clock, plaintext)
+    print "Sending forward Data"
     g.conn.send_data(g.clock.uint, ciphertext.bytes)
 
     g.send_log(False, g.ID == g.masterID, keystream, ciphertext, plaintext)
@@ -52,8 +54,11 @@ class MyApplication(web.application):
 	def run(self, port=8888, *middleware):
 		func = self.wsgifunc(*middleware)
         	return web.httpserver.runsimple(func, ('0.0.0.0', port))
-def start_server():
-  #if __name__ == '__main__':
+
+
+class MyWebServer(threading.Thread):
+ def run(self):
+    #if __name__ == '__main__':
     app = MyApplication(urls, globals())
     print 'HTTP client started'
     app.run(port=g.httpPort)

@@ -57,15 +57,27 @@ if __name__ == '__main__':
 
 	
 	  
-	thread.start_new_thread(Client.start_server(), ())
 
-	#One Direction
-	while(True):
-	 data = g.conn.recv_data()
-	 g.clock,plaintext = Bits(data[1], length=26), Bits(bytes=data[3])
-	 keystream,cipheredTxt =StateMachine.gen_keystream(g.masterID, g.kcPrime, g.clock,
-	 plaintext)
-	 g.send_log(True, g.ID == g.masterID, keystream, cipheredTxt, plaintext)
+
+	def do_sockets():
+		while(True):
+		 data = g.conn.recv_data()
+		 print "Recieved some Data"
+		 g.clock,plaintext = Bits(data[1], length=26), Bits(bytes=data[3])
+		 keystream,cipheredTxt =StateMachine.gen_keystream(g.masterID, g.kcPrime, g.clock,
+		 plaintext)
+		 g.send_log(True, g.ID == g.masterID, keystream, cipheredTxt, plaintext)
+
+	thread.start_new_thread(do_sockets(), ())
+	print 'started sockets thread'
+	Client.MyWebServer().start()
+
+	
+	
+	#thread.start_new_thread(Client.start_server(), ())
+
+
+
 	 
 
 
