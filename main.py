@@ -55,7 +55,7 @@ if __name__ == '__main__':
 	g.masterID = master(g.ID, g.otherID)
 	print 'Master BD_ADDR is: ', g.masterID
 
-	
+
 
 	def do_sockets():
 		while(True):
@@ -64,27 +64,28 @@ if __name__ == '__main__':
 		 temp = BitArray(uint=data[1], length=26)
 
 		 g.clock,plaintext = temp, Bits(bytes=data[3])
-         	 
+
 		 rev = BitArray(g.clock)
 		 rev.reverse()
 		 print "clock: ", g.clock
 		 keystream,cipheredTxt =StateMachine.encipher(g.masterID, g.kcPrime, rev,
 		 plaintext)
-		 g.send_log(True, g.ID == g.masterID, keystream, plaintext, cipheredTxt)
+		 g.send_log('true', g.ID == g.masterID, keystream, plaintext, cipheredTxt)
+
 
 	thread.start_new_thread(do_sockets, ())
 	print 'started sockets thread'
 	Client.MyWebServer().start()
 
-	
-	
+
+
 	#thread.start_new_thread(Client.start_server(), ())
 
 
 
-	 
 
 
-	  
-  
+
+
+
 
