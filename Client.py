@@ -36,6 +36,7 @@ class Kc:
 class Message:
   def POST(self):
     print 'recieved message request'
+    g.clock = Bits(uint=g.clock.uint+1, length=26)
     data = web.input()
     plaintext = Bits(bytes=data.plaintext.encode('utf-8'))
     rev = BitArray(g.clock)
