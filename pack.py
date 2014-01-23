@@ -56,7 +56,6 @@ def unpack_data_length(data):
 
 def unpack_data(data):
   type, clock, length = struct.unpack('>III', data[:12])  
-  d = struct.unpack('>' + ('B' * length), data[12:12+length])
-  d = bytearray(d)
+  d =  data[12:12+length]
   return (type,clock,length,d)
 

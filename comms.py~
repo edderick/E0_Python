@@ -7,7 +7,11 @@ class Connection:
   Handles communication between the two bluetooth fakes.
   """
   def __init__(self,s):
+    self.s = s
     self.stream = s.makefile(mode='rwb')
+  def __del__(self):
+      self.stream.close()
+      self.s.close()
   def __send(self, binary_data):
     self.stream.write(binary_data)
     self.stream.flush()
@@ -29,13 +33,14 @@ class Connection:
       extra_data = self.__recv(l)
       return unpack_data(data+extra_data)
 
+
 def bind(port):
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+       s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
     s.bind(('',port))
     return s
 def listen(s):
   s.listen(0)
-  print 'socket listening'
   conn, addr = s.accept()
   print('accepted connection from %s', addr)
   return conn
